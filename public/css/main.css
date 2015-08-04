@@ -1,3 +1,7 @@
+body {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
 .center {
   margin: auto;
   width: 100%;
@@ -6,4 +10,42 @@
 .center img {
   display: block;
   margin: auto;
+}
+
+.button {
+  display:block;
+  float: left;
+  width: 25%;
+  min-width: 80px;
+  padding: 1em;
+  margin: 2em;
+  text-align: center;
+}
+
+.button a, .button a:active, .button a:visited {
+  color: #eee;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.button a:hover {
+  color: #fff;
+}
+
+.bg-green {
+  background: rgb(100,200,100);
+}
+
+.bg-red {
+  background: rgb(200,100,100);
+}
+
+#controls {
+  margin: auto;
+  width: 50%;
+  height: 3em;
+}
+
+#controls:after {
+  clear:both;
 }
