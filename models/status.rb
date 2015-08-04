@@ -19,13 +19,13 @@ class Status
     elsif status != nil && status == 'false'
       false
     else
-      nil # file not found
+      false # file not found
     end
   end
 
   def set status
     if status
-      @@redis.set('status', 'true')
+      @@redis.setex('status', 28800, 'true')
     else
       @@redis.set('status', 'false')
     end
