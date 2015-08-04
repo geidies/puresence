@@ -1,5 +1,7 @@
+$:.unshift File.join(File.dirname(__FILE__))
+$:.unshift File.join(File.dirname(__FILE__), 'models')
 require 'sinatra'
-require './models/status'
+require 'models/status'
 
 status = Status.instance
 

@@ -1,4 +1,4 @@
-require 'redis'
+require 'redis_implementation'
 require 'singleton'
 
 class Status
@@ -6,11 +6,11 @@ class Status
   include Singleton
 
   def initialize
-    @redis = Redis.new( :url => ENV["REDISTOGO_URL"] )
+    @@redis = Redis::Implementation.connect( :url => ENV["REDISTOGO_URL"] )
   end
 
   def get
-    status = @redis.get("status")
+    status = @@redis.get("status")
     if status != nil && status == 'true'
       true
     elsif status != nil && status == 'false'
@@ -22,9 +22,9 @@ class Status
 
   def set status
     if status
-      @redis.set('status', 'true')
+      @@redis.set('status', 'true')
     else
-      @redis.set('status', 'false')
+      @@redis.set('status', 'false')
     end
   end
 
