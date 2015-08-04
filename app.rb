@@ -8,6 +8,7 @@ status = Status.instance
 
 get '/' do
   @ticktock = status.get
+  @message  = @ticktock ? "Jupp!" : "nope :("
   erb :index
 end
 

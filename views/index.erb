@@ -4,8 +4,9 @@
   <link rel="stylesheet" type="text/css" href="css/main.css">
 </head>
 <body>
+  <div id="banner"><%= @message %></div>
   <div class="center">
-    <img src="images/<%= @ticktock %>.jpg">
+    <img src="images/<%= @ticktock %>.jpg" alt="<%= @message %>">
     <div id="controls">
       <div class="button bg-green">
         <a href="/come">I'm here now.</a>
