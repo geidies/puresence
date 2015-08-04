@@ -1,6 +1,9 @@
 require 'redis'
+require 'singleton'
 
 class Status
+
+  include Singleton
 
   def initialize
     @redis = Redis.new( :url => ENV["REDISTOGO_URL"] )
