@@ -7,6 +7,9 @@ class Status
 
   def initialize
     @@redis = Redis::Implementation.connect( :url => ENV["REDISTOGO_URL"] )
+    if @@redis.get("status") == nil
+      @@redis.set "status", false
+    end
   end
 
   def get

@@ -2,6 +2,7 @@ $:.unshift File.join(File.dirname(__FILE__))
 $:.unshift File.join(File.dirname(__FILE__), 'models')
 require 'sinatra'
 require 'models/status'
+require 'json'
 
 status = Status.instance
 
@@ -18,4 +19,9 @@ end
 get '/go' do
   status.set false
   redirect '/'
+end
+
+get '/status' do
+  content_type :json
+  { :someone_there => status.get }.to_json
 end

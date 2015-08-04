@@ -1,7 +1,6 @@
 ENV['RACK_ENV'] = 'test'
 
 require 'app'
-require 'minitest/autorun'
 require 'rack/test'
 
 
@@ -34,6 +33,11 @@ describe "The puressence App" do
 
   it "has set presence when calling /go" do
     expect( Status.instance.get ).to be false
+  end
+
+  it "responds with a json at /status" do
+    get '/status'
+    expect( last_response.body ).to eq '{"someone_there":false}'
   end
 
 end
