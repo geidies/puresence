@@ -1,12 +1,14 @@
 <!html>
 <head>
   <title>Is Someone At Werkstatt</title>
-  <link rel="stylesheet" type="text/css" href="css/main.css">
+  <link rel="stylesheet" type="text/css" href="css/main.css" />
+  <link rel="icon" type="image/png" href="images/favicon_<%= @ticktock %>.png" />
+  <link rel="apple-touch-icon" href="images/touch-icon.png" />
 </head>
 <body>
   <div id="banner"><%= @message %></div>
   <div class="center">
-    <img src="images/<%= @ticktock %>.jpg" alt="<%= @message %>">
+    <img src="images/<%= @ticktock %>.png" alt="<%= @message %>">
     <div id="controls">
       <a href="/come" class="button bg-green">
         I'm here now.

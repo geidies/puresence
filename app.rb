@@ -26,3 +26,4 @@ get '/status' do
   content_type :json
   { :someone_there => status.get }.to_json
 end
+
