@@ -10,6 +10,8 @@ class Redis::Implementation
       return MockRedis.new( *params )
     elsif ENV["RACK_ENV"] == "docker"
       return MockRedis.new( *params )
+    elsif ENV["RACK_ENV"] == "development"
+      return MockRedis.new( *params )
     else
       raise "UNKNOWN ENVIRONMENT: #{ ENV['RACK_ENV'] }"
     end
