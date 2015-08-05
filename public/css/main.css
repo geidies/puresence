@@ -2,6 +2,13 @@ body {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
+#container {
+  position: absolute;
+  top: 20%;
+  left: 10%;
+  width: 80%;
+}
+
 #banner {
   -webkit-transform: rotate(320deg);
   -moz-transform: rotate(320deg);
