@@ -9,7 +9,8 @@ status = Status.instance
 get '/' do
   @status = status.get
   if @status == 'plan'
-    @message = "Arriving in #{(status.eta - Time.now.utc.to_i) / 60} minutes"
+    minutes = (status.eta - Time.now.utc.to_i) / 60
+    @message = "Arriving in #{minutes} minute" + ( minutes > 1 ? "s" : "" )
   else
     @message = @status ? "Jupp!" : "nope :("
   end
