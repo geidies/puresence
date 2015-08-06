@@ -1,7 +1,8 @@
 <!html>
 <head>
   <title>Is Someone At Werkstatt</title>
-  <link rel="stylesheet" type="text/css" href="css/main.css" />
+  <link rel="stylesheet" type="text/css" href="css/main.css" media="screen" />
+  <link rel="stylesheet" type="text/css" href="css/handheld.css" media="only screen and (max-device-width: 480px)" />
   <link rel="icon" type="image/png" href="images/favicon_<%= @ticktock %>.png" />
   <link rel="apple-touch-icon" href="images/touch-icon-blue.png" />
   <link rel="apple-touch-startup-image" href="images/startup.png" media="screen" />
@@ -68,17 +69,20 @@
     (function() {
      var source = document.getElementById('pick_time');
      var target = document.getElementById('timepicker');
-     source.addEventListener('click', function() {
-       target.style.display = 'block';
-     });
-     var body = document.documentElement;
-     body.addEventListener('click', function(e) {
-       if ( e.target != source
-            && e.target != target
-            && target.style.display != 'none' ) {
-         target.style.display = 'none';
-       }  
-     });
+     if (source){
+       source.addEventListener('click', function() {
+         target.style.display = 'block';
+         });
+
+       var body = document.documentElement;
+       body.addEventListener('click', function(e) {
+         if ( e.target != source
+              && e.target != target
+              && target.style.display != 'none' ) {
+           target.style.display = 'none';
+         }  
+       });
+     }
     })();
   </script>
 </body>

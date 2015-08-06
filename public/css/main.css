@@ -6,13 +6,6 @@ td {
     width: auto;
 }
 
-#container {
-  position: absolute;
-  top: 10%;
-  left: 10%;
-  width: 80%;
-}
-
 #banner {
   -webkit-transform: rotate(320deg);
   -moz-transform: rotate(320deg);
