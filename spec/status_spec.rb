@@ -32,7 +32,6 @@ describe "the status model" do
     status.set false
     expect( status.get ).to be false
     status.plan 10
-    # expect( status.get ).to be_is_a String
     expect( status.get ).to eq "plan"
   end
 
@@ -40,7 +39,7 @@ describe "the status model" do
     status.set false
     expect( status.get ).to be false
     status.plan 10
-    expect( status.eta ).to be_within(2).of(10)
+    expect( status.eta ).to be_within(2).of(Time.now.utc.to_i + 10)
   end
 
   it "should return false when eta has expired" do

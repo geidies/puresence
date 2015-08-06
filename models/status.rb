@@ -38,8 +38,8 @@ class Status
   end
 
   def plan expire_in_seconds
-    t0 = Time.now.utc
-    expires_at = t0 = expire_in_seconds
+    t0 = Time.now.utc.to_i
+    expires_at = t0 + expire_in_seconds
     @@redis.setex 'eta', expires_at, expires_at
     set 'plan', expire_in_seconds
   end
