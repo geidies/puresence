@@ -22,17 +22,17 @@ body {
   display: none;
 }
 
-.center {
-  margin: auto;
-  width: 100%;
-}
-
 .center img {
   display: block;
   margin: auto;
   width: 75%;
 }
 
+.message {
+  text-align: center;
+  font-size: 200%;
+  font-weight: bold;
+}
 
 .button {
   display: inline;
@@ -69,6 +69,17 @@ body {
   background: rgb(200,100,100);
 }
 
+.bg-yellow {
+  background: rgb(255,159,63);
+}
+
+.bg-white {
+  background: rgb(250,250,250);
+  border: 1px solid gray;
+  color: rgb(255,159,63);
+  font-weight: bold;
+}
+
 #controls {
   text-align: center;
   margin: auto;
@@ -77,4 +88,39 @@ body {
 
 #controls:after {
   clear:both;
+}
+
+#pick_time {
+  cursor: pointer;
+}
+
+#timepicker {
+  display: none;
+  width: 75%;
+  background: white;
+  position: absolute;
+  left: 12.5%;
+  bottom: 0;
+  border: gray 1px solid;
+  -webkit-border-radius: 15;
+  -moz-border-radius: 15;
+  border-radius: 15px;
+  padding: 25px;
+  text-align: center;
+}
+
+#timepicker table {
+  display: block;
+  margin: auto;
+  width: 50%;
+}
+
+#timepicker td {
+  text-align: center;
+  width: 10%:
+}
+
+#timepicker td a {
+  width:inherit;
+  display:block;
 }

@@ -7,8 +7,12 @@ require 'json'
 status = Status.instance
 
 get '/' do
-  @ticktock = status.get
-  @message  = @ticktock ? "Jupp!" : "nope :("
+  @status = status.get
+  if @status == 'plan'
+    @message = "Arriving in #{(status.eta - Time.now.utc.to_i) / 60} minutes"
+  else
+    @message = @status ? "Jupp!" : "nope :("
+  end
   erb :index
 end
 
@@ -27,3 +31,7 @@ get '/status' do
   { :someone_there => status.get }.to_json
 end
 
+get '/plan/:time' do
+  status.plan params[:time].to_i * 60
+  redirect '/'
+end
