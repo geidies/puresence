@@ -2,6 +2,10 @@ body {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
+td {
+    width: auto;
+}
+
 #container {
   position: absolute;
   top: 10%;
@@ -35,7 +39,7 @@ body {
 }
 
 .button {
-  display: inline;
+  display: inline-block;
   background: #42d934;
   -webkit-border-radius: 15;
   -moz-border-radius: 15;
@@ -110,7 +114,6 @@ body {
 }
 
 #timepicker table {
-  display: block;
   margin: auto;
   width: 50%;
 }
