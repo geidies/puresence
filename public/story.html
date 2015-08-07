@@ -1,0 +1,383 @@
+<!doctype html>
+<html>
+<head>
+  <title>Is Someone At Werkstatt - the Story</title>
+  <link rel="stylesheet" type="text/css" href="css/story.css" media="screen" />
+</head>
+<body>
+<h1>Building the Minimum Viable Product</h1>
+
+<p>The ThoughtWorks office in Berlin is located in one of the nicest areas of town. Right next to Wasserturm and Kollwitzplatz, across the street from Immanuelkirche. People like working there a lot, but there is one problem - it is not really an office, but more of a meetup space, which is why it is called Werkstatt.</p>
+
+<h2>What&#39;s the problem?</h2>
+
+<p>There are only a few sets of keys for Werkstatt. If you are on the beach, or just want to stop by after work to have one of the 15 different types of &quot;Mate&quot; Sodas, you might be standing in front of a locked door. Wouldn&#39;t it be nice if you could check if there is someone there, before leaving home? And wouldn&#39;t it be nice to do so without calling/slacking/mailing several people who you think might eventually have a key?</p>
+
+<h2>Simple enough.</h2>
+
+<p>So the solution I envisioned was a simple webpage, that at a first glance would show the status. Green glyph for &quot;someone&#39;s there&quot;, red glyph for &quot;Werkstatt is closed&quot;. That would fulfill the problem statement. Such a simple thing should not cost much, if any money. The benefit of such a page, after all, is that thoughtworkers would save €2.70 for a public transportation ticket, in case no one is there, or €5.40 roundtrip. Given once a month someone travels to Werkstatt to find a closed door, and we could potentially save €64.80 a year, the whole project should not cost more than €9.72 to run; 15% Cost of Goods Sold is the high watermark (see <a href="http://blog.openviewpartners.com/cost-of-goods-sold-cogs-for-software-as-a-service-saas-business/">here</a> and <a href="http://vistapointadvisors.com/key-metrics-in-a-saas-transaction/">here</a>) in the Software-as-a-Service business.</p>
+
+<p>With that earnings/savings potential, it should be easy and quick to build, too. The development cost must amortize over a couple of years. So let&#39;s look at a simple Tech stack.</p>
+
+<h2>Stack</h2>
+
+<p>To build, test and host an application, we need a few things. The easiest of all solutions would just be a static page, served by Apache httpd, nginx or IIS, which would be updated through sftp. While simplest, it has a few problems: who is able to chnage the status then? How is the web server configured? Who makes sure it stays up? Who creates accounts for upload? So this solution that would have been sufficient in the 90s is not an option any more.</p>
+
+<p>The minimum stack from my experience would be:</p>
+
+<h3>a microframework.</h3>
+
+<p>There are several available for the various programming languages:</p>
+
+<ul>
+<li> Perl: <a href="http://www.perldancer.org/">dancer</a></li>
+<li> Ruby: <a href="http://www.sinatrarb.com/">sinatra</a></li>
+<li> Python: <a href="http://flask.pocoo.org/">flask</a>, <a href="http://bottlepy.org/docs/dev/index.html">bottle</a></li>
+<li> even for Java: <a href="http://sparkjava.com/">spark</a></li>
+</ul>
+
+<p>The natural choice for me would have been Perl, but that would have minimized the collaborating opportunity with other thoughtworkers, for some odd reason the greatest of all programming languages is not very popular within ThoughtWorks (ducks and hides while the flame wars begin). With ruby I&#39;m very familiar, and so seem people around me, so I chose sinatra. </p>
+
+<h3>persistence</h3>
+
+<p>The app will display and change state. This needs to be kept somewhere. I tend to use well-proven solutions, for this project I considered:</p>
+
+<ul>
+<li> mysql - but will there really be relations? Maybe Overkill?</li>
+<li> memcached - but what if that goes down?</li>
+<li> redis - looks like a good fit. Persistent and simple.</li>
+</ul>
+
+<h3>version control</h3>
+
+<p>git and (github.com). No need for experiments here.</p>
+
+<h3>hosting</h3>
+
+<p>For a sinatra project, <a href="https://heroku.com/">heroku</a> is available for easy deployments and free (as in beer) hosting. Heroku also offers a <a href="https://redistogo.com/">redis-as-a-service addon</a>. So, we&#39;re almost done.</p>
+
+<h3>logging, monitoring, alerting</h3>
+
+<p>I wouldn&#39;t consider a project to be &quot;live&quot; unless it is fully instrumented. That is, performance is measured, access to it can be analysed, and there is alerts whenever something goes wrong. Even a small service like this might get mission critical before too long - so think about <a href="https://newrelic.com/">APM</a>, <a href="https://loggly.com/">logging</a> and <a href="https://pagerduty.com/">alerting</a> right from the start. Alternatives for those services are plenty available, the ones mentioned above are just examples.</p>
+
+<p>Automating logging, monitoring and alerting comes at a cost. The alternative is to manually monitor while the App is used by a small number of people for non-mission critical Tasks. So I thought about it and decided against implementing those right from the start.</p>
+
+<h3>CI</h3>
+
+<p>In comparison to that - continuous testing is not optional. I had never tried <a href="https://travis-ci.org/">travis</a>, but heard it&#39;s good and easy. Turned out to be true for this project.</p>
+
+<h2>Putting it together</h2>
+
+<p>At first, we need to create a new project on github. 
+<img alt="github" src="images/github.png" style="width:400px; float:left; margin:20px; display: inline-block;">
+Get an account, click &quot;new project&quot; and follow the steps listed to check it out into a local folder. On my MacBook, use a sub directory of my home directory called &quot;src&quot; when I check out projects.</p>
+
+<p>First, the auto-generated README.md can be filled with some information. To use sinatra, we should have bundler installed, a ruby gem which makes management of gems for applications easy:</p>
+
+<pre><code>sudo gem install bundler
+</code></pre>
+
+<p>Now we&#39;ll create a Gemfile with the following content:</p>
+
+<pre><code>source &#39;https://rubygems.org&#39; # tell bundler where to look for gems
+
+gem &#39;sinatra&#39;      # the framework we&#39;ll be using
+gem &#39;redis&#39;        # for the persistence layer
+gem &#39;mock_redis&#39;   # in tests, we&#39;ll use a local mock instance for persistence
+gem &#39;rake&#39;         # rake is ruby&#39;s &quot;make&quot; - automation for build/test tasks
+gem &#39;rack-test&#39;    # sinatra uses the rack middleware API, to test it, there&#39;s a gem
+gem &#39;rspec&#39;        # test framework
+gem &#39;json&#39;         # translate json objects to ruby and vice versa
+</code></pre>
+
+<p>After that, run</p>
+
+<pre><code>bundle install
+</code></pre>
+
+<p>In the directory and the gems will be installed. The app is almost ready - to start up the development server, we need a config.ru file:</p>
+
+<pre><code>require &#39;./app&#39;           # load our app
+run Sinatra::Application  # and run it
+</code></pre>
+
+<p>And finally, we&#39;ll start with a very simple app.rb: - nope, wait. We&#39;ll create the data model first. So:</p>
+
+<pre><code>mkdir models
+</code></pre>
+
+<p>and edit models/status.rb</p>
+
+<pre><code>require &#39;mock_redis&#39;
+
+class Status
+  def initialize
+    @redis = MockRedis.new( :url =&gt; ENV[&quot;REDISTOGO_URL&quot;] ) # later, that env variable will be filled.
+  end
+
+  def get
+    status = @redis.get &quot;status&quot;
+    if status == nil
+      false
+    elsif status == &quot;true&quot;
+      true
+    else
+      false
+    end
+  end
+
+  def set status
+    if status == true
+      @redis.set &quot;status&quot;, &quot;true&quot;
+      true
+    elsif status == false
+      @redis.set &quot;status&quot;, &quot;false&quot;
+    else
+      false
+    end
+  end
+
+end
+</code></pre>
+
+<p>Why would we write the model first? This doesn&#39;t display anything on the screen, aye? it does not, but we can test whether everything works as expected. So, we </p>
+
+<pre><code>mkdir spec
+</code></pre>
+
+<p>And create a Rakefile to tell rake how to run the tests:</p>
+
+<pre><code>require &#39;rake&#39;
+require &#39;rspec/core/rake_task&#39;
+
+RSpec::Core::RakeTask.new(:spec) do |t|
+  t.pattern = Dir.glob(&#39;spec/**/*_spec.rb&#39;)
+end
+task :test    =&gt; :spec
+task :default =&gt; :spec
+</code></pre>
+
+<p>if you run </p>
+
+<pre><code>rake
+</code></pre>
+
+<p>now, your tests should be successful. Woohoo! But wait. We haven&#39;t written one yet. So let&#39;s create spec/status_spec.rb:</p>
+
+<pre><code>ENV[&#39;RACK_ENV&#39;] = &#39;test&#39;
+
+require &#39;./models/status&#39;
+
+describe &quot;the status model&quot; do
+
+  status = Status.new
+
+  it &quot;has methods get and set&quot; do
+    expect(status).to respond_to :get
+    expect(status).to respond_to(:set) .with(1) .argument
+  end
+
+  it &quot;returns true get when setting status to true&quot; do
+    status.set true
+    expect(status.get) .to eq true
+  end
+
+  it &quot;returns false get when setting status to false&quot; do
+    status.set false
+    expect(status.get) .to eq false
+  end
+
+  it &quot;set() returns true when setting status with a boolean&quot; do
+    response = status.set false
+    expect(response) .to eq true
+
+    response = status.set true
+    expect(response) .to eq true
+  end
+
+  it &quot;set() returns false when setting status with something else and does not set status&quot; do
+    response = status.set &quot;foo&quot;
+    expect(response) .to eq false
+    expect(status.get) .to eq true
+
+    response = status.set nil
+    expect(response) .to eq false
+    expect(status.get) .to eq true
+  end
+
+end
+</code></pre>
+
+<p>I know. It seems trivial. But we&#39;ll extend that model, and a very simple mistake during refactoring might break even the simplest methods. Next up: Display the status. For that, we want a web page, and that is created through a template. Let&#39;s go, create <code>views/index.erb</code></p>
+
+<pre><code>&lt;!doctype html&gt;
+&lt;html&gt;
+    &lt;head&gt;
+         &lt;title&gt;Is someone at Werkstatt?&lt;/title&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;h1&gt;&lt;%= @someone_there ? &quot;YES&quot; : &quot;nope&quot; %&gt;&lt;/h1&gt;
+    &lt;/body&gt;
+&lt;/html&gt;        
+</code></pre>
+
+<p>That means: when the status in the database is set to true, it will print yes, otherwise it&#39;ll print nope.
+Let&#39;s create an <code>app.rb</code> to tie it all together:</p>
+
+<pre><code>$:.unshift File.join(File.dirname(__FILE__))
+$:.unshift File.join(File.dirname(__FILE__), &#39;models&#39;)
+require &#39;sinatra&#39;
+require &#39;models/status&#39;
+require &#39;json&#39;
+
+set :views, File.join(File.dirname(__FILE__), &#39;views&#39;)
+
+get &quot;/&quot; do
+    status = Status.new
+    @someone_there = status.get
+    erb :index
+end
+</code></pre>
+
+<p>if we now run</p>
+
+<pre><code>bundle install
+rackup
+</code></pre>
+
+<p>And point the browser to <code>http://localhost:9292/</code>, we are greeted with a friendly &quot;nope&quot;. Let&#39;s add buttons to change the status:</p>
+
+<pre><code>&lt;p&gt;&lt;a href=&quot;come&quot;&gt;I&#39;m here now.&lt;/a&gt;   &lt;a href=&quot;go&quot;&gt;I&#39;m going home.&lt;/a&gt;&lt;/p&gt;
+</code></pre>
+
+<p>...paste that after the h1 element in <code>views/index.erb</code>, and add the following routes to <code>app.rb</code>:</p>
+
+<pre><code>get &quot;/come&quot; do
+    status = Status.instance
+    status.set true
+    redirect_to &quot;/&quot;
+end
+
+get &quot;/go&quot; do
+    status = Status.instance
+    status.set false
+    redirect_to &quot;/&quot;
+end
+</code></pre>
+
+<p>See the <code>Status.instance</code> thing in there, instead of <code>Status.new</code>? That is because we&#39;ll make the Status object a singleton, so it persists between requests; also, redis-to-go, which we&#39;ll use later, can only handle a single connection in the free tier, latest when that is used, we&#39;ll get into trouble. So, change Status.new to Status.instance in the <code>get &quot;/&quot;</code> route as well, and replace the model with this:</p>
+
+<pre><code>require &#39;mock_redis&#39;
+require &#39;singleton&#39;
+
+class Status
+  include Singleton # Calling Status.new will give an error now. Use Status.instance instead.
+
+  def initialize
+    @redis = MockRedis.new( :url =&gt; ENV[&quot;REDISTOGO_URL&quot;] ) # later, that env variable will be filled.
+  end
+
+  def get
+    status = @redis.get &quot;status&quot;
+    if status == nil
+      false
+    elsif status == &quot;true&quot;
+      true
+    else
+      false
+    end
+  end
+
+  def set status
+    if status == true
+      @redis.set &quot;status&quot;, &quot;true&quot;
+      true
+    elsif status == false
+      @redis.set &quot;status&quot;, &quot;false&quot;
+    else
+      false
+    end
+  end
+
+end
+</code></pre>
+
+<p>in the <code>spec/status_spec.rb</code>, you also need to replace Status.new with Status.instance, and after that <code>rake</code> should tell you your app still tests nicely. Pounting your browser back to <code>http://localhost:9292/</code>, you should see the two links now, and if you click them, the page reloads and shows the new status.</p>
+
+<h2>Testing</h2>
+
+<p>Tempting to write css now, add images, make the page all nice and shiny, isn&#39;t it? Details, we can do that later. Far more important is to get it live, so we can start using it. The good thing is that everything so far is covered by tests. Or, is it? we can also test whether the webapp behaves as expected. To do so, let&#39;s add another test file, <code>spec/app_spec.rb</code>.</p>
+
+<pre><code>ENV[&#39;RACK_ENV&#39;] = &#39;test&#39;
+
+require &#39;./models/status&#39;
+require &#39;rack/test&#39;
+require &#39;sinatra&#39;
+require &#39;./app&#39;
+
+describe &quot;the web app&quot; do
+
+  include Rack::Test::Methods
+  def app
+    Sinatra::Application
+  end
+
+  it &quot;returns 200 on getting the index&quot; do
+    get &#39;/&#39;
+    expect( last_response ).to be_ok
+  end
+
+  it &quot;return 302 when requesting /come&quot; do
+    get &#39;/come&#39;
+    expect(last_response.status).to be 302
+  end
+
+  it &quot;has set absence when calling /come&quot; do
+    expect( Status.instance.get ).to be true
+    get &#39;/&#39; # virtually follow it
+    expect(last_response.body).to match /yes/i
+  end
+
+  it &quot;return 302 when requesting /go&quot; do
+    get &#39;/go&#39;
+    expect(last_response.status).to be 302
+  end
+
+  it &quot;has set presence when calling /go&quot; do
+    expect( Status.instance.get ).to be false
+    get &#39;/&#39; # virtually follow it
+    expect(last_response.body).to match /nope/i
+  end
+
+end
+</code></pre>
+
+<p>This will now simulate a quick manual testing session - does the database state reflect what I have clicked? Does the web page reflect the database? It is possible to do really, really complex tests even for what is normally considered a manual testing effort, so these end-to-end tests are necessary. Run <code>rake</code> - the tests should all pass.</p>
+
+<p>With that, we should git commit (if you haven&quot;t already) and git push, so the code is save and others can contribute. But before doing that, let&#39;s have a look at travis-ci:</p>
+
+<p><img alt="travis" src="images/travis.png" style="width:400px; float:left; margin:20px; display: inline-block;"></p>
+
+<p>With your github account, you can sign up there. Add the new project through the UI, and then well add a <code>.travis.yml</code> file to our repo:</p>
+
+<pre><code>language: ruby
+</code></pre>
+
+<p>This is all that it needs. when you commit and push now, travis will build and test the project. All tests green? Let&#39;s push it live.</p>
+
+<h2>Deploying</h2>
+
+<p>The app gets to the internetz through heroku, a platform-as-a-service.
+<img alt="heroku" src="images/heroku.png" style="width:400px; float:right; margin:20px; display: inline-block;"></p>
+
+<p>When you sign up for it, it will give you a tutorial style start. Do that, and then finally deploy your app:</p>
+
+<pre><code>heroku apps:create
+git push heroku master
+</code></pre>
+
+<p>Le App is live! Now it&#39;s time to get a domain. There is a <em>lot</em> of domain registrars out there, most of which have terrible user interfaces, try to trick you into upsales, spam you, or: all of the above. I found <a href="https://hover.com/">hover</a> to be the least terrible of them, and they sponsor a few of my favourite podcasts, but of course you&#39;re free to choose. The domain is the only thing that will cost hard money in this project, in this case it was $13.- for one year. Click it, set the CNAME to your heroku URL and tell heroku that you did so. A couple of minutes later, your app should be available on the new domain.</p>
+
+<h2>Where to go from here?</h2>
+
+<p>Check the app that is <a href="http://issomeoneatwerkstatt.com/">live currently</a>, and the <a href="https://github.com/geidies/puresence">code</a>. Maybe you clone it and use it for personal meetings. Or for your shop. Or for small villages, where shops/doctors/offices are only open infrequently. Feature requests go through github, same with bugs; pull requests are of course welcome.</p>
